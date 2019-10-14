@@ -4,11 +4,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 from typing import Tuple, Iterable, Callable, List
 import multiprocessing
 from functools import partial
+import itertools
+import more_itertools
 
 
-def split(df: pd.DataFrame, chunk_size: int) -> Iterable[pd.DataFrame]:
-    is_remainder = (df.shape[0] % chunk_size != 0)
-    split_indices = range(chunk_size, (df.shape[0] // chunk_size + is_remainder) * chunk_size, chunk_size)
+def split(df: pd.DataFrame, batch_size: int) -> Iterable[pd.DataFrame]:
+    is_remainder = (df.shape[0] % batch_size != 0)
+    split_indices = range(batch_size, (df.shape[0] // batch_size + is_remainder) * batch_size, batch_size)
     return np.split(df, split_indices)
 
 
@@ -28,16 +30,30 @@ def update_bins(hist: np.array, bin_edges: np.array, similarities: np.array) -> 
 # def update_bins(hist: np.array, bin_edges: np.array, similarities: np.array) -> None:
 #     np.sum(hist, np.histogram(similarities, bins=bin_edges)[0], out=hist)
 
+#
+# def _calc_gen_imp_hist(s2_batches: Iterable[pd.DataFrame], bin_edges: np.array, similarity_measure: Callable,
+#                        s1_batch: pd.DataFrame) -> Tuple[np.array, np.array]:
+#     gen_hist = np.zeros(len(bin_edges) + 1, dtype=np.int64)
+#     imp_hist = np.zeros(len(bin_edges) + 1, dtype=np.int64)
+#
+#     for s2_batch in s2_batches:
+#         gen_sim, imp_sim = calc_gen_imp_sim(s1_batch, s2_batch, similarity_measure)
+#         update_bins(gen_hist, bin_edges, gen_sim)
+#         update_bins(imp_hist, bin_edges, imp_sim)
+#     return gen_hist, imp_hist
 
-def _calc_gen_imp_hist(s2_batches: Iterable[pd.DataFrame], bin_edges: np.array, similarity_measure: Callable,
-                       s1_batch: pd.DataFrame) -> Tuple[np.array, np.array]:
+
+def _calc_gen_imp_hist(bin_edges: np.array, similarity_measure: Callable,
+                       batches: Tuple[pd.DataFrame, pd.DataFrame]) -> Tuple[np.array, np.array]:
     gen_hist = np.zeros(len(bin_edges) + 1, dtype=np.int64)
     imp_hist = np.zeros(len(bin_edges) + 1, dtype=np.int64)
 
-    for s2_batch in s2_batches:
-        gen_sim, imp_sim = calc_gen_imp_sim(s1_batch, s2_batch, similarity_measure)
-        update_bins(gen_hist, bin_edges, gen_sim)
-        update_bins(imp_hist, bin_edges, imp_sim)
+    s1_batches, s2_batches = batches
+    for s1_batch in s1_batches:
+        for s2_batch in s2_batches:
+            gen_sim, imp_sim = calc_gen_imp_sim(s1_batch, s2_batch, similarity_measure)
+            update_bins(gen_hist, bin_edges, gen_sim)
+            update_bins(imp_hist, bin_edges, imp_sim)
     return gen_hist, imp_hist
 
 
@@ -47,9 +63,11 @@ def calc_gen_imp_hist(s1: pd.DataFrame, s2: pd.DataFrame, bin_edges: np.array, b
     gen_hist = (np.zeros(len(bin_edges) + 1, dtype=np.int64), bin_edges.copy())
     imp_hist = (np.zeros(len(bin_edges) + 1, dtype=np.int64), bin_edges.copy())
 
-    func = partial(_calc_gen_imp_hist, split(s2, batch_size), bin_edges, similarity_measure)
+    func = partial(_calc_gen_imp_hist, bin_edges, similarity_measure)
+    batches = itertools.product(more_itertools.divide(n_workers, split(s1, batch_size)),
+                                more_itertools.divide(n_workers, split(s2, batch_size)))
     with multiprocessing.Pool(n_workers) as pool:
-        results = pool.map(func, split(s1, batch_size))
+        results = pool.map(func, batches)
 
     return results
     # return gen_hist, imp_hist
