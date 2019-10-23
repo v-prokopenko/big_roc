@@ -1,0 +1,4 @@
+COLLECTED_METRICS_FILENAME = "ManyMetricsLargeScaleAnalysis.csv"
+ROC_PREFIX = "ROC_"
+GEN_IMP_DISTRIBUTION_PREFIX = "Gen_Imp_"
+METRICS_PREFIX = "Metrics_"
