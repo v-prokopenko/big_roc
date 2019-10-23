@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import re
+import random
 
 
 # assumes array is monotonic and has (positive and negative numbers) or 0
@@ -21,8 +22,8 @@ def line_identity_point(x1: float, y1: float, x2: float, y2: float, eps: float =
     return c
 
 
-def read_dataset(path: Path, session_column: str = "Sess", subject_column: str = "Sub",
-                 feature_name_pattern: str = r"^f\d+$"):
+def read_dataset(path: Path, session_column: str = "Session", subject_column: str = "Subject",
+                 feature_name_pattern: str = r"^F\d+$"):
     df = pd.read_csv(path)
     useful_columns = [name for name in df.columns if
                       name in [session_column, subject_column] or re.match(feature_name_pattern, name)]
@@ -65,3 +66,21 @@ def uniformly_subsample(x: np.ndarray, subsample_size: int) -> np.ndarray:
     for value in values_to_search:
         indices.append(np.argmin(np.abs(x - value)))
     return np.array(indices)
+
+
+def subsample_sessions(session1, session2, n_subj, n_feat, copy=False):
+    random.seed()
+    if n_subj < len(session1.index):
+        rows = random.sample(list(session1.index), n_subj)
+    else:
+        rows = list(session1.index)
+    if n_feat < len(session1.columns):
+        columns = random.sample(list(session1.columns), n_feat)
+    else:
+        columns = list(session1.columns)
+    sub_session1, sub_session2 = session1.loc[rows, columns], session2.loc[rows, columns]
+
+    if copy:
+        return sub_session1.copy(), sub_session2.copy()
+    else:
+        return sub_session1, sub_session2

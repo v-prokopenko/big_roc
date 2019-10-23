@@ -15,7 +15,7 @@ def distribution_stats(sample: np.ndarray) -> DistributionStats:
     return DistributionStats(np.median(sample),
                              stats.iqr(sample),
                              stats.skew(sample),
-                             stats.kurtosis(sample)
+                             stats.kurtosis(sample, fisher=False)
                              )
 
 
