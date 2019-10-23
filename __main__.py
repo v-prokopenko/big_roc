@@ -38,11 +38,15 @@ def construct_directory_name(dataset_name: str, n_subj: int, n_feat: int, repeti
 
 
 def cli_collect_results(ctx, param, dir_path: Path):
+    if not dir_path:
+        return
     collect_results(dir_path, COLLECTED_METRICS_FILENAME)
     ctx.exit()
 
 
 def cli_use_config_file(ctx, param, config_file):
+    if not config_file:
+        return
     config = json.load(config_file)
     config_file.close()
     config["data_files"] = expand_unix_path(config["data_files"])
@@ -60,12 +64,14 @@ def cli_use_config_file(ctx, param, config_file):
                     s1_part, s2_part = subsample_sessions(s1, s2, n_subj, n_feat)
                     results = analyze_features(s1_part, s2_part)
 
-                    output_path = config["output_dir"] / construct_directory_name(data_file.stem,
-                                                                                  n_subj, n_feat, repetition)
+                    output_path = config["output_dir"] / construct_directory_name(
+                        data_file.stem, n_subj, n_feat, repetition
+                    )
                     while output_path.exists():
                         repetition += 1
-                        output_path = config["output_dir"] / construct_directory_name(data_file.stem,
-                                                                                      n_subj, n_feat, repetition)
+                        output_path = config["output_dir"] / construct_directory_name(
+                            data_file.stem, n_subj, n_feat, repetition
+                        )
 
                     save_analysis_results(s1_part, s2_part, results, output_path)
         collect_results(config["output_dir"], COLLECTED_METRICS_FILENAME)
