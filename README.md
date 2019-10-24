@@ -12,7 +12,7 @@ You can run the program using the configuration .json file:
 python __main__.py --config-file=config.json
 ```
 Configuration .json file has the following format:
-```json
+```
 {
   NOTE (not a json field): duplicate data_files are not removed. So if you specify the same file 2 times, the program will run twice for it
   "data_files": list of paths to the files with features (accepts Unix style pathname patterns),
