@@ -79,9 +79,11 @@ def cli_use_config_file(ctx, param, config_file):
 
 
 @click.command()
-@click.option("--collect", type=Path, callback=cli_collect_results, expose_value=False, is_eager=True)
-@click.option("--use-config-file", type=click.File('rb'), callback=cli_use_config_file,
-              expose_value=False, is_eager=True)
+@click.option("--config-file", type=click.File('rb'), callback=cli_use_config_file,
+              expose_value=False, is_eager=True,
+              help="Specify the .json config file that specifies the analysis to run.")
+@click.option("--collect", type=Path, callback=cli_collect_results, expose_value=False, is_eager=True,
+              help="Collect the results produced using the .json config file")
 @click.argument("data_files", nargs=-1)
 @click.argument("output_dir", type=Path)
 def run_analysis(data_files: List[str], output_dir: Path):
