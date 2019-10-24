@@ -1,4 +1,4 @@
-name: big_roc1
+name: big_roc
 channels:
   - anaconda
   - defaults
