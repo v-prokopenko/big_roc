@@ -18,9 +18,10 @@ def parse_dir_name(dir_name: str) -> RunConfig:
 
 
 def collect_results(dir_path: Path, out_filename: str):
+    print("Collecting results")
     all_metrics = []
     for run_dir in dir_path.iterdir():
-        if not run_dir.is_dir():
+        if not run_dir.is_dir() or run_dir.name.startswith('.'):
             continue
         run_config = parse_dir_name(run_dir.name)
         metrics = pd.read_csv(run_dir / f"{METRICS_PREFIX}{run_dir.name}.csv", index_col="Name")
