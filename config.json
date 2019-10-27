@@ -1,7 +1,8 @@
 {
   "data_files": ["data/synthetic_data/Band*.csv"],
   "n_features": [10],
-  "n_subjects": [100000],
-  "n_repetitions": 10,
-  "output_dir": "TestAnalysis"
+  "n_subjects": [1000, 10000, 100000],
+  "n_repetitions": 30,
+  "repetition_start": 1,
+  "output_dir": "results/TestAnalysis"
 }
