@@ -4,6 +4,7 @@ import pandas as pd
 from collections import namedtuple
 import json
 import re
+import logging
 
 from big_roc import metrics
 from big_roc.gen_imp_hist import gen_imp_histogram, convert_to_numpy_style_histogram
@@ -56,7 +57,9 @@ def analyze_features(s1: pd.DataFrame, s2: pd.DataFrame, n_bins: int = 10 ** 6) 
 
 
 def save_analysis_results(s1: pd.DataFrame, s2: pd.DataFrame, results: AnalysisResults, output_path: Path,
-                          safe_output: bool = False) -> None:
+                          safe_output: bool = True) -> None:
+    logging.info(f"Saving results at {output_path}")
+
     if output_path.exists() and safe_output:
         raise ValueError("Output path already exist")
     if not output_path.exists():

@@ -1,11 +1,11 @@
 import click
 from pathlib import Path
 from glob import glob
-import re
 import pandas as pd
 import json
 from typing import List
-from big_roc.utils import read_dataset, subsample_sessions
+import logging
+from big_roc.utils import read_dataset, subsample_sessions, setup_logging
 from big_roc.analysis import analyze_features, save_analysis_results
 from big_roc.collect_results import collect_results
 from constants import COLLECTED_METRICS_FILENAME
@@ -51,7 +51,8 @@ def cli_use_config_file(ctx, param, config_file):
     config_file.close()
     config["data_files"] = expand_unix_path(config["data_files"])
     config["output_dir"] = Path(config["output_dir"])
-    print(config)
+    logging.info(config)
+
     if not config["output_dir"].exists():
         config["output_dir"].mkdir()
 
@@ -61,6 +62,9 @@ def cli_use_config_file(ctx, param, config_file):
             for n_feat in config["n_features"]:
                 repetition = config.get("repetition_start", 1)
                 for i in range(config["n_repetitions"]):
+                    logging.info(f"Running analysis for: "
+                                 f"data_file={data_file}, n_subj={n_subj}, n_feat={n_feat}, repetition_index={i}"
+                                 )
                     s1_part, s2_part = subsample_sessions(s1, s2, n_subj, n_feat)
                     results = analyze_features(s1_part, s2_part)
 
@@ -74,8 +78,9 @@ def cli_use_config_file(ctx, param, config_file):
                         )
 
                     save_analysis_results(s1_part, s2_part, results, output_path)
-        collect_results(config["output_dir"], COLLECTED_METRICS_FILENAME)
-        ctx.exit()
+
+    collect_results(config["output_dir"], COLLECTED_METRICS_FILENAME)
+    ctx.exit()
 
 
 @click.command()
@@ -89,10 +94,12 @@ def cli_use_config_file(ctx, param, config_file):
 def run_analysis(data_files: List[str], output_dir: Path):
     data_files = expand_unix_path(data_files)
     for data_file in data_files:
+        logging.info(f"Running analysis for: data_file={data_file}")
         s1, s2 = read_dataset(data_file)
         results = analyze_features(s1, s2)
         save_analysis_results(s1, s2, results, output_dir / data_file.name)
 
 
 if __name__ == '__main__':
+    setup_logging()
     run_analysis()

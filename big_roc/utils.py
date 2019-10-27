@@ -1,3 +1,6 @@
+import datetime
+import logging
+
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -84,3 +87,16 @@ def subsample_sessions(session1, session2, n_subj, n_feat, copy=False):
         return sub_session1.copy(), sub_session2.copy()
     else:
         return sub_session1, sub_session2
+
+
+def setup_logging(level=logging.INFO):
+    fmt = '%(asctime)s %(levelname)-8s %(message)s'
+    date_fmt = '%Y-%m-%d %H:%M:%S'
+    logging.basicConfig(format=fmt, datefmt=date_fmt, level=level)
+
+    log_dir = Path('logs')
+    if log_dir.exists():
+        filename = str(log_dir / datetime.datetime.now().strftime('logfile_' + __name__ + '_%H_%M_%d_%m_%Y.log'))
+        file_handler = logging.FileHandler(filename, mode='w')
+        file_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
+        logging.getLogger().addHandler(file_handler)
