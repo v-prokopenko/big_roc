@@ -1,0 +1,6 @@
+*__pycache__
+.idea
+*.ipynb
+data
+results
+logs
