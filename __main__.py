@@ -3,7 +3,7 @@ from pathlib import Path
 from glob import glob
 import pandas as pd
 import json
-from typing import List
+from typing import List, Dict
 import shutil
 import logging
 from big_roc.utils import read_dataset, subsample_sessions, setup_logging, construct_dir_name
@@ -41,11 +41,7 @@ def cli_collect_results(ctx, param, dir_path: Path):
     ctx.exit()
 
 
-def cli_use_config_file(ctx, param, config_file):
-    if not config_file:
-        return
-    config = json.load(config_file)
-    config_file.close()
+def run_from_config(config: Dict):
     config["data_files"] = expand_unix_path(config["data_files"])
     config["output_dir"] = Path(config["output_dir"])
     logging.info(config)
@@ -77,6 +73,48 @@ def cli_use_config_file(ctx, param, config_file):
                     save_analysis_results(s1_part, s2_part, results, output_path)
 
     collect_results(config["output_dir"], COLLECTED_METRICS_FILENAME)
+
+
+def cli_use_config_file(ctx, param, config_file):
+    if not config_file:
+        return
+    config = json.load(config_file)
+    config_file.close()
+    if isinstance(config, list):
+        for c in config:
+            run_from_config(c)
+    else:
+        run_from_config(config)
+    # config["data_files"] = expand_unix_path(config["data_files"])
+    # config["output_dir"] = Path(config["output_dir"])
+    # logging.info(config)
+    #
+    # if not config["output_dir"].exists():
+    #     config["output_dir"].mkdir()
+    #
+    # for data_file in config["data_files"]:
+    #     s1, s2 = read_dataset(data_file)
+    #     for n_subj in config["n_subjects"]:
+    #         for n_feat in config["n_features"]:
+    #             repetition = config.get("repetition_start", 1)
+    #             for i in range(config["n_repetitions"]):
+    #                 logging.info(f"Running analysis for: "
+    #                              f"data_file={data_file}, n_subj={n_subj}, n_feat={n_feat}, repetition_index={i}"
+    #                              )
+    #                 s1_part, s2_part = subsample_sessions(s1, s2, n_subj, n_feat)
+    #                 results = analyze_features(s1_part, s2_part)
+    #
+    #                 output_path = config["output_dir"] / construct_dir_name(
+    #                     data_file.stem, n_subj, n_feat, repetition
+    #                 )
+    #                 while output_path.exists():
+    #                     repetition += 1
+    #                     output_path = config["output_dir"] / construct_dir_name(
+    #                         data_file.stem, n_subj, n_feat, repetition
+    #                     )
+    #
+    #                 save_analysis_results(s1_part, s2_part, results, output_path)
+
     ctx.exit()
 
 
