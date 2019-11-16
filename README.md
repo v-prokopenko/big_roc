@@ -19,7 +19,7 @@ Configuration .json file has the following format:
   "n_features": list of numbers of features to subsample from the given files with data,
   "n_subjects": list of numbers of subjects to subsample from the given files with data,
   "n_repetitions": integer value that specifies the number of times to repeat the analysis for given data file, number of features and subjects,
-  "repetition_start"[Optional]: index to start repetition count from (if not specified it's 1),
+  "repetition_start"[Optional, see --merge option]: index to start repetition count from (if not specified it's 1),
   "output_dir": path to the directory to where the will be saved
 }
 ```
@@ -45,6 +45,19 @@ Each folder will contain 3 files:
 3) ROC metrics (like EER) and Genuine and Impostor distribution statistics (like median or IQR)
 
 Then after all computations are finished it will collect all metric values into 1 file at output_dir location (currently called "ManyMetricsLargeScaleAnalysis.csv").
+## Merge the results
+In case you have multiple results directories with possibly colliding directories you can run the script in the "merge" mode.
+You can do it by running the command like this:
+```console
+python __main__.py resuts1 results2 other_results* output_dir --merge
+```
+It will go over all specified results directories and copy each "run folder" into output_dir. 
+It will save runs from all specified results directories starting with repetition 1. 
+In other words, it resolves the repetition collision but loses the original repetition index. 
+In the end it'll collect the results for the output_folder.
+
+Note that this command accepts Unix style pathname patterns for results directories. 
+It filters the duplicate results directories.
 ## Collect the results
 The following command does exactly the same thing that is done in the end of the run that uses a configuration file.
 ```console

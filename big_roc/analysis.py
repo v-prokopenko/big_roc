@@ -9,7 +9,7 @@ import logging
 from big_roc import metrics
 from big_roc.gen_imp_hist import gen_imp_histogram, convert_to_numpy_style_histogram
 from big_roc.utils import uniformly_subsample
-from constants import METRICS_PREFIX, ROC_PREFIX, GEN_IMP_DISTRIBUTION_PREFIX
+from constants import METRICS_PREFIX, ROC_PREFIX, GEN_IMP_DISTRIBUTION_PREFIX, METADATA_FILENAME
 
 AnalysisResults = namedtuple("AnalysisResults", ['metrics', 'bin_edges', 'gen_hist', 'imp_hist', 'fpr', 'fnr'])
 
@@ -87,7 +87,7 @@ def save_analysis_results(s1: pd.DataFrame, s2: pd.DataFrame, results: AnalysisR
     metrics_filename = output_path / f"{METRICS_PREFIX}{output_path.name}.csv"
     results.metrics.to_csv(metrics_filename)
 
-    metadata_filename = output_path / "metadata.json"
+    metadata_filename = output_path / METADATA_FILENAME
     metadata = {"s1_features": list(s1.columns), "s2_features": list(s2.columns),
                 "s1_subjects": list(s1.index), "s2_subjects": list(s2.index)}
     with open(str(metadata_filename), 'w') as f:

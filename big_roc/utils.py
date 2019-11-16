@@ -8,8 +8,7 @@ import re
 import random
 
 
-# assumes array is monotonic and has (positive and negative numbers) or 0
-# returns only 1 index if there is a 0
+
 def find_indices_around_0(array: np.ndarray):
     i = np.where(array >= 0, array, np.inf).argmin()
     j = np.where(array <= 0, array, -np.inf).argmax()
@@ -100,3 +99,7 @@ def setup_logging(level=logging.INFO):
         file_handler = logging.FileHandler(filename, mode='w')
         file_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
         logging.getLogger().addHandler(file_handler)
+
+
+def construct_dir_name(dataset_name: str, n_subj: int, n_feat: int, repetition: int):
+    return f"{dataset_name}_NSub{n_subj:06}_NFeat{n_feat:03}_Repeat{repetition:03}"
