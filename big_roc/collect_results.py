@@ -18,8 +18,14 @@ def collect_results(dir_path: Path, out_filename: str):
         run_config = parse_dir_name(run_dir.name)
         logging.info(run_config)
         metrics = pd.read_csv(run_dir / f"{METRICS_PREFIX}{run_dir.name}.csv", index_col="Name")
-        all_metrics.append(pd.DataFrame([{**run_config._asdict(), **metrics['Value'].to_dict()}]))
+        values_dict = metrics['Value'].to_dict()
+        errors_dict = {key + "_ERROR": value for key, value in metrics['Error'].to_dict().items() if value is not None}
+        min_dict = {key + "_MIN": value for key, value in metrics['ValueMin'].to_dict().items() if value is not None}
+        max_dict = {key + "_MAX": value for key, value in metrics['ValueMax'].to_dict().items() if value is not None}
+        all_metrics.append(pd.DataFrame([{**run_config._asdict(), **values_dict,
+                                          **errors_dict, **min_dict, **max_dict}]))
     all_metrics = pd.concat(all_metrics)
+    all_metrics.dropna(axis=1, how='all', inplace=True)
     all_metrics.to_csv(dir_path / out_filename, index=False)
     return all_metrics
 
