@@ -52,6 +52,19 @@ def analyze_features(s1: pd.DataFrame, s2: pd.DataFrame, n_bins: int = 10 ** 6) 
                         if re.match(metrics_to_scale_pattern, metric_name) is not None]
     all_metrics.loc[metrics_to_scale] = all_metrics.loc[metrics_to_scale] * 100
 
+    # hang on there, not the best part of my code
+    metrics_to_rename_pattern = "|".join([r"^FNR_AT_FPR_.*$"])
+    metrics_to_rename = [metric_name for metric_name in all_metrics.index
+                         if re.match(metrics_to_rename_pattern, metric_name) is not None]
+
+    def convert_name_to_percentages_name(name: str):
+        name_parts = name.split('_')
+        static_part = name_parts[:-1]
+        number_str = name_parts[-1]
+        new_number_str = f"{float(number_str.replace('p', '.')) * 100:.10f}".replace('.', 'p').rstrip('0')
+        return '_'.join(static_part + [new_number_str])
+
+    all_metrics.rename(index={name: convert_name_to_percentages_name(name) for name in metrics_to_rename}, inplace=True)
     results = AnalysisResults(all_metrics, bin_edges, gen_hist, imp_hist, fpr, fnr)
     return results
 
@@ -92,4 +105,3 @@ def save_analysis_results(s1: pd.DataFrame, s2: pd.DataFrame, results: AnalysisR
                 "s1_subjects": list(s1.index), "s2_subjects": list(s2.index)}
     with open(str(metadata_filename), 'w') as f:
         json.dump(metadata, f)
-

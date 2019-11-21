@@ -63,5 +63,5 @@ def fnr_at_fpr(fnr: np.ndarray, fpr: np.ndarray, fpr_value: float, eps: float = 
     error = max(fnr_value - fnr_min, fnr_max - fnr_value)
 
     # Get number string in non-scientific mode, leave only a decimal part if it starts with "0."
-    name = f"FNR_AT_FPR_{f'{fpr_value:.10f}'.strip('0').lstrip('.')}"
+    name = f"FNR_AT_FPR_{f'{fpr_value:.10f}'.replace('.', 'p').rstrip('0')}"
     return MetricEstimate(name, fnr_value, fnr_min, fnr_max, error)
